@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.org.Triplens.DTO.TripDTO;
 import com.org.Triplens.Services.TripServices;
-import com.org.Triplens.entity.Trip;
 
 @CrossOrigin(origins = "*")
 @RestController

@@ -35,7 +35,15 @@ const CreateTrip = ({ user }) => {
         try {
             console.log('User:', user);
             // Handle case where user might be a string (legacy) or object
-            const userId = user?.objectId || user?.id;
+            let userId = user?.objectId || user?.id;
+
+            // SAFETY CHECK: If userId is an object (stale data from before the backend fix), force re-login
+            if (typeof userId === 'object') {
+                alert("Session data update required. Please login again.");
+                localStorage.removeItem('user');
+                navigate('/login');
+                return;
+            }
 
             if (!userId) {
                 // If user exists but no ID (e.g. legacy string), force logout
@@ -48,7 +56,7 @@ const CreateTrip = ({ user }) => {
                 throw new Error("User ID not found. Please login again.");
             }
 
-            const response = await fetch(`http://localhost:8080/trips/addTrip?userId=${userId}`, {
+            const response = await fetch(`http://127.0.0.1:8080/trips/addTrip?userId=${userId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -64,7 +72,11 @@ const CreateTrip = ({ user }) => {
             }
         } catch (error) {
             console.error('Error creating trip:', error);
-            alert(`Error: ${error.message}`);
+            if (error.message === 'Failed to fetch') {
+                alert('Error: Backend server is not reachable. Please ensure the server is running on port 8080.');
+            } else {
+                alert(`Error: ${error.message}`);
+            }
         } finally {
             setLoading(false);
         }
