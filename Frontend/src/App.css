@@ -45,6 +45,14 @@
   gap: 1rem;
 }
 
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
 /* Hero */
 .hero {
   position: relative;
@@ -53,8 +61,8 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding-top: 80px;
-  /* Navbar height offset */
+  padding-top: 120px;
+  /* Increased from 80px to clear Navbar */
   overflow: hidden;
 }
 

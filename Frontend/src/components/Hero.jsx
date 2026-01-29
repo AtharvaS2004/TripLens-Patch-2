@@ -1,4 +1,4 @@
-import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Hero = () => {
     return (
@@ -7,7 +7,7 @@ const Hero = () => {
                 <h1>Capture Your Journeys with <span className="highlight">Triplens</span></h1>
                 <p>The ultimate travel companion for documenting your adventures. seamless, beautiful, and secure.</p>
                 <div className="hero-buttons">
-                    <button className="btn btn-primary">Start Exploring</button>
+                    <Link to="/create-trip" className="btn btn-primary">Start Exploring</Link>
                     <button className="btn btn-outline">Learn More</button>
                 </div>
             </div>

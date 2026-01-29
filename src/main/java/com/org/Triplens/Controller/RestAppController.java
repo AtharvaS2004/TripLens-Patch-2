@@ -12,7 +12,7 @@ import com.org.Triplens.entity.Users;
 import com.org.Triplens.exception.NoUserFoundException;
 import com.org.Triplens.exception.PasswordIncorrectException;
 
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/users")
 public class RestAppController {

@@ -15,6 +15,7 @@ import com.org.Triplens.entity.Trip;
 import com.org.Triplens.entity.Users;
 import com.org.Triplens.exception.NoTripFoundException;
 import com.org.Triplens.exception.NoUserFoundException;
+
 @Component
 public class TripServices {
 
@@ -33,21 +34,28 @@ public class TripServices {
 			return false;
 		}
 	}
-	
-	public boolean addTrip(ObjectId userId,TripDTO trip) {
+
+	public boolean addTrip(ObjectId userId, TripDTO trip) {
 		Trip newTrip = new Trip();
-		newTrip.setTitle(trip.getTitle());
+		// Use destination as title if title is missing
+		newTrip.setTitle(trip.getDestination() != null ? "Trip to " + trip.getDestination() : "New Trip");
+		newTrip.setStartLocation(trip.getStartLocation());
+		newTrip.setDestination(trip.getDestination());
+		newTrip.setStartDate(trip.getStartDate());
+		newTrip.setEndDate(trip.getEndDate());
+		newTrip.setTravelers(trip.getTravelers());
 		newTrip.setOwnerUserId(userId);
 		newTrip.setSharedUsers(new ArrayList<SharedUser>());
-		ObjectId tripId=tripDao.addTrip(newTrip);
+		newTrip.setStatus(true); // Default status to true (active)
+		ObjectId tripId = tripDao.addTrip(newTrip);
 		userDao.addTrip(userId, tripId);
 		return true;
 	}
-	
+
 	public List<Trip> getTripsByUserId(ObjectId userId) {
-	    return tripDao.getTripsByUserId(userId);
+		return tripDao.getTripsByUserId(userId);
 	}
-	
+
 	public void updateTripStatus(ObjectId tripId, Boolean status) {
 		tripDao.updateTripStatus(tripId, status);
 	}
