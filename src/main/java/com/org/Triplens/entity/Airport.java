@@ -7,7 +7,7 @@ import lombok.Data;
 
 
 @Document(collection = "Airport")
-public class Airport {
+public class Airport extends Route {
 
     @Id
     private String id;

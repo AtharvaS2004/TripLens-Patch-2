@@ -10,73 +10,119 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "trips")
 public class Trip {
 
-	 	@Id
-	    private ObjectId id;
+	@Id
+	private ObjectId id;
 
-	    private String title;
+	private String title;
+	private String startLocation;
+	private String destination;
+	private String startDate;
+	private String endDate;
+	private Integer travelers;
 
-	    private ObjectId ownerUserId;
+	private ObjectId ownerUserId;
 
-	    private List<SharedUser> sharedUsers;
+	private List<SharedUser> sharedUsers;
 
-	    private ObjectId itineraryId;
+	private ObjectId itineraryId;
 
-	    private Instant createdAt;
+	private Instant createdAt;
 
-	    private Boolean status;
+	private Boolean status;
 
-		public ObjectId getId() {
-			return id;
-		}
+	public ObjectId getId() {
+		return id;
+	}
 
-		public void setId(ObjectId id) {
-			this.id = id;
-		}
+	public void setId(ObjectId id) {
+		this.id = id;
+	}
 
-		public String getTitle() {
-			return title;
-		}
+	public String getTitle() {
+		return title;
+	}
 
-		public void setTitle(String title) {
-			this.title = title;
-		}
+	public void setTitle(String title) {
+		this.title = title;
+	}
 
-		public ObjectId getOwnerUserId() {
-			return ownerUserId;
-		}
+	public String getStartLocation() {
+		return startLocation;
+	}
 
-		public void setOwnerUserId(ObjectId ownerUserId) {
-			this.ownerUserId = ownerUserId;
-		}
+	public void setStartLocation(String startLocation) {
+		this.startLocation = startLocation;
+	}
 
-		public List<SharedUser> getSharedUsers() {
-			return sharedUsers;
-		}
+	public String getDestination() {
+		return destination;
+	}
 
-		public void setSharedUsers(List<SharedUser> sharedUsers) {
-			this.sharedUsers = sharedUsers;
-		}
+	public void setDestination(String destination) {
+		this.destination = destination;
+	}
 
-		public ObjectId getItineraryId() {
-			return itineraryId;
-		}
+	public String getStartDate() {
+		return startDate;
+	}
 
-		public void setItineraryId(ObjectId itineraryId) {
-			this.itineraryId = itineraryId;
-		}
+	public void setStartDate(String startDate) {
+		this.startDate = startDate;
+	}
 
-		public Instant getCreatedAt() {
-			return createdAt;
-		}
+	public String getEndDate() {
+		return endDate;
+	}
 
-		public void setCreatedAt(Instant createdAt) {
-			this.createdAt = createdAt;
-		}
+	public void setEndDate(String endDate) {
+		this.endDate = endDate;
+	}
 
-		public Boolean getStatus() {
-			return status;
-		}
-		public void setStatus(Boolean status) {
-			this.status = status;
-		}
+	public Integer getTravelers() {
+		return travelers;
+	}
+
+	public void setTravelers(Integer travelers) {
+		this.travelers = travelers;
+	}
+
+	public ObjectId getOwnerUserId() {
+		return ownerUserId;
+	}
+
+	public void setOwnerUserId(ObjectId ownerUserId) {
+		this.ownerUserId = ownerUserId;
+	}
+
+	public List<SharedUser> getSharedUsers() {
+		return sharedUsers;
+	}
+
+	public void setSharedUsers(List<SharedUser> sharedUsers) {
+		this.sharedUsers = sharedUsers;
+	}
+
+	public ObjectId getItineraryId() {
+		return itineraryId;
+	}
+
+	public void setItineraryId(ObjectId itineraryId) {
+		this.itineraryId = itineraryId;
+	}
+
+	public Instant getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(Instant createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public Boolean getStatus() {
+		return status;
+	}
+
+	public void setStatus(Boolean status) {
+		this.status = status;
+	}
 }

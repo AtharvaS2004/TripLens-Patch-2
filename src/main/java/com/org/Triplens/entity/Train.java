@@ -6,7 +6,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "Train")
-public class Train {
+public class Train extends Route {
 	@Id
 	private String id;
 	private String train_no;

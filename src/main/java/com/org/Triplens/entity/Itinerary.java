@@ -15,8 +15,8 @@ public class Itinerary {
 	private ObjectId tripId;
 
 	private List<String> dayPlans;
-	private String hotels;
-	private String routes;
+	private Hotel hotels;
+	private Route routes;
 	private List<FestivalEntity> festivals;
 
 	public ObjectId getId() {
@@ -43,19 +43,19 @@ public class Itinerary {
 		this.dayPlans = dayPlans;
 	}
 
-	public String getHotels() {
+	public Hotel getHotels() {
 		return hotels;
 	}
 
-	public void setHotels(String hotels) {
+	public void setHotels(Hotel hotels) {
 		this.hotels = hotels;
 	}
 
-	public String getRoutes() {
+	public Route getRoutes() {
 		return routes;
 	}
 
-	public void setRoutes(String routes) {
+	public void setRoutes(Route routes) {
 		this.routes = routes;
 	}
 
