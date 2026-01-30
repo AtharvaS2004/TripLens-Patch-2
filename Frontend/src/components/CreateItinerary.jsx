@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import MapView from './MapView';
 import './CreateItinerary.css';
 
 const CreateItinerary = ({ user }) => {
@@ -14,6 +15,9 @@ const CreateItinerary = ({ user }) => {
     const [trains, setTrains] = useState([]);
     const [flights, setFlights] = useState([]);
     const [selectedTransport, setSelectedTransport] = useState(null);
+
+    const [routeCoordinates, setRouteCoordinates] = useState([]);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         if (!tripId) {
@@ -53,16 +57,14 @@ const CreateItinerary = ({ user }) => {
     };
 
     const fetchTransport = async (mode) => {
-        if (mode === 'car') return; // No API for car yet
+        // if (mode === 'car') return; // No API for car yet -> Now implemented below
 
         console.log(`[CreateItinerary] Fetching ${mode} for ${startLocation} -> ${destination}`);
         try {
             if (mode === 'train') {
                 const url = `http://localhost:8080/api/trains/search?origin=${startLocation}&destination=${destination}`;
                 console.log(`[CreateItinerary] Calling Train API: ${url}`);
-                const res = await fetch(url, { method: 'POST' }); // Wait, TrainController uses POST!
-                // Checking TrainController.java step 238: @PostMapping("/search")
-                // Frontend was using GET (fetch default). THIS IS THE BUG FOR TRAINS!
+                const res = await fetch(url, { method: 'POST' });
 
                 console.log(`[CreateItinerary] Train API Status: ${res.status}`);
                 if (res.ok) {
@@ -84,18 +86,38 @@ const CreateItinerary = ({ user }) => {
                 } else {
                     console.error('[CreateItinerary] Flight API Failed');
                 }
+            } else if (mode === 'car') {
+                const url = `http://localhost:8080/api/route?from=${startLocation}&to=${destination}`;
+                console.log(`[CreateItinerary] Calling Route API: ${url}`);
+                const res = await fetch(url);
+                if (res.ok) {
+                    const data = await res.json();
+                    console.log('[CreateItinerary] Route Data:', data);
+                    // GeoJSON coordinates are [lng, lat], Leaflet needs [lat, lng]
+                    if (data.features && data.features.length > 0) {
+                        const coords = data.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                        setRouteCoordinates(coords);
+                        setError(null);
+                    } else {
+                        setError("No route found between these locations.");
+                    }
+                } else {
+                    console.error('[CreateItinerary] Route API Failed');
+                    setError("Failed to fetch route. Please check backend configuration (API Key).");
+                }
             }
         } catch (error) {
             console.error(`Error fetching ${mode}s:`, error);
+            if (mode === 'car') {
+                setError(`Network Error: ${error.message}`);
+            }
         }
     };
 
     const handleTransportChange = (mode) => {
         setTransportMode(mode);
         setSelectedTransport(null);
-        if (mode !== 'car') {
-            fetchTransport(mode);
-        }
+        fetchTransport(mode);
     };
 
     const handleSaveItinerary = async () => {
@@ -215,17 +237,22 @@ const CreateItinerary = ({ user }) => {
 
                     {transportMode === 'car' && (
                         <div className="car-option">
-                            <p>Road trip! The distance is approximately [Calc Distance] km.</p>
-                            <p>Suggested Route: [Google Maps Insert Placeholder]</p>
+                            <p><strong>Road Trip:</strong> {startLocation} ➝ {destination}</p>
+                            {routeCoordinates.length > 0 ? (
+                                <MapView routeCoordinates={routeCoordinates} />
+                            ) : (
+                                <p>{error ? <span style={{ color: 'red' }}>{error}</span> : "Loading route..."}</p>
+                            )}
                         </div>
-                    )}
-                </div>
-            </section>
+                    )
+                    }
+                </div >
+            </section >
 
             <button className="save-btn" onClick={handleSaveItinerary}>
                 Save Itinerary
             </button>
-        </div>
+        </div >
     );
 };
 

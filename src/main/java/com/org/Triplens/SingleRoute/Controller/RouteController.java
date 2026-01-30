@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:5173")
 public class RouteController {
 
     private final RouteService routeService;
@@ -19,8 +19,7 @@ public class RouteController {
     @GetMapping("/route")
     public ResponseEntity<?> getRoute(
             @RequestParam String from,
-            @RequestParam String to
-    ) {
+            @RequestParam String to) {
         try {
             return ResponseEntity.ok(routeService.getRoute(from, to).toString());
         } catch (Exception e) {

@@ -6,8 +6,11 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-@SpringBootApplication(scanBasePackages = { "com.org.Triplens.config","com.org.Triplens.Controller", "com.org.Triplens.passwordEncryption",
-		"com.org.Triplens.Services", "com.org.Triplens.DAO","com.org.Triplens.ingestion","com.org.Triplens.repository.TrainSearch" })
+@SpringBootApplication(scanBasePackages = { "com.org.Triplens.config", "com.org.Triplens.Controller",
+		"com.org.Triplens.passwordEncryption",
+		"com.org.Triplens.Services", "com.org.Triplens.DAO", "com.org.Triplens.ingestion",
+		"com.org.Triplens.repository.TrainSearch",
+		"com.org.Triplens.SingleRoute" })
 @EnableMongoRepositories("com.org.Triplens.repository")
 @org.springframework.boot.autoconfigure.domain.EntityScan("com.org.Triplens.entity")
 @EnableAsync
