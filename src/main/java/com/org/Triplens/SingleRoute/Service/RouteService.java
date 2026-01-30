@@ -10,82 +10,84 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class RouteService {
 
-    @Value("${ors.api.key}")
-    private String orsApiKey;
+        @Value("${ors.api.key}")
+        private String orsApiKey;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+        private final RestTemplate restTemplate = new RestTemplate();
 
-    // 📍 Convert city name → coordinates
-    private double[] getCoordinates(String city) {
+        // 📍 Convert city name → coordinates
+        private double[] getCoordinates(String city) {
 
-        String geoUrl =
-                "https://api.openrouteservice.org/geocode/search"
-                        + "?text=" + city
-                        + "&size=1";
+                String geoUrl = "https://api.openrouteservice.org/geocode/search"
+                                + "?text=" + city
+                                + "&size=1";
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", orsApiKey);
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("Authorization", orsApiKey);
 
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
+                HttpEntity<Void> entity = new HttpEntity<>(headers);
 
-        ResponseEntity<String> response =
-                restTemplate.exchange(
-                        geoUrl,
-                        HttpMethod.GET,
-                        entity,
-                        String.class
-                );
+                ResponseEntity<String> response = restTemplate.exchange(
+                                geoUrl,
+                                HttpMethod.GET,
+                                entity,
+                                String.class);
 
-        JSONObject json = new JSONObject(response.getBody());
-        JSONArray features = json.getJSONArray("features");
+                JSONObject json = new JSONObject(response.getBody());
+                JSONArray features = json.getJSONArray("features");
 
-        if (features.isEmpty()) {
-            throw new RuntimeException("City not found: " + city);
+                if (features.isEmpty()) {
+                        throw new RuntimeException("City not found: " + city);
+                }
+
+                JSONArray coords = features.getJSONObject(0)
+                                .getJSONObject("geometry")
+                                .getJSONArray("coordinates");
+
+                // [lng, lat]
+                return new double[] { coords.getDouble(0), coords.getDouble(1) };
         }
 
-        JSONArray coords =
-                features.getJSONObject(0)
-                        .getJSONObject("geometry")
-                        .getJSONArray("coordinates");
+        // 🛣 Get route (with alternatives)
+        public String getRoute(String from, String to) {
 
-        // [lng, lat]
-        return new double[]{coords.getDouble(0), coords.getDouble(1)};
-    }
+                // ✅ STEP 1: Resolve cities
+                double[] start = getCoordinates(from);
+                double[] end = getCoordinates(to);
 
-    // 🛣 Get route (with alternatives)
-    public String getRoute(String from, String to) {
+                double startLng = start[0];
+                double startLat = start[1];
+                double endLng = end[0];
+                double endLat = end[1];
 
-        // ✅ STEP 1: Resolve cities
-        double[] start = getCoordinates(from);
-        double[] end = getCoordinates(to);
+                // ✅ STEP 2: ORS directions URL
+                String routeUrl = "https://api.openrouteservice.org/v2/directions/driving-car"
+                                + "?start=" + startLng + "," + startLat
+                                + "&end=" + endLng + "," + endLat
+                                + "&alternative_routes=true";
 
-        double startLng = start[0];
-        double startLat = start[1];
-        double endLng = end[0];
-        double endLat = end[1];
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("Authorization", orsApiKey);
+                headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // ✅ STEP 2: ORS directions URL
-        String routeUrl =
-                "https://api.openrouteservice.org/v2/directions/driving-car"
-                        + "?start=" + startLng + "," + startLat
-                        + "&end=" + endLng + "," + endLat
-                        + "&alternative_routes=true";
+                HttpEntity<Void> entity = new HttpEntity<>(headers);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", orsApiKey);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
-
-        // ✅ STEP 3: Call ORS
-        ResponseEntity<String> response =
-                restTemplate.exchange(
-                        routeUrl,
-                        HttpMethod.GET,
-                        entity,
-                        String.class
-                );
-
-        return response.getBody(); // GeoJSON
-    }
+                // ✅ STEP 3: Call ORS
+                // ✅ STEP 3: Call ORS
+                try {
+                        ResponseEntity<String> response = restTemplate.exchange(
+                                        routeUrl,
+                                        HttpMethod.GET,
+                                        entity,
+                                        String.class);
+                        return response.getBody(); // GeoJSON
+                } catch (org.springframework.web.client.HttpClientErrorException e) {
+                        System.err.println("ORS API Error: " + e.getStatusCode());
+                        System.err.println("ORS Response Body: " + e.getResponseBodyAsString());
+                        throw new RuntimeException("ORS Failed: " + e.getResponseBodyAsString());
+                } catch (Exception e) {
+                        System.err.println("General Route Error: " + e.getMessage());
+                        throw new RuntimeException("Route Fetch Failed: " + e.getMessage());
+                }
+        }
 }
