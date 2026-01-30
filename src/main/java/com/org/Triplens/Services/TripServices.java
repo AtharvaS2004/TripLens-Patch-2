@@ -35,7 +35,7 @@ public class TripServices {
 		}
 	}
 
-	public boolean addTrip(ObjectId userId, TripDTO trip) {
+	public String addTrip(ObjectId userId, TripDTO trip) {
 		Trip newTrip = new Trip();
 		// Use destination as title if title is missing
 		newTrip.setTitle(trip.getDestination() != null ? "Trip to " + trip.getDestination() : "New Trip");
@@ -49,7 +49,7 @@ public class TripServices {
 		newTrip.setStatus(true); // Default status to true (active)
 		ObjectId tripId = tripDao.addTrip(newTrip);
 		userDao.addTrip(userId, tripId);
-		return true;
+		return tripId.toString();
 	}
 
 	public List<Trip> getTripsByUserId(ObjectId userId) {
