@@ -1,6 +1,6 @@
 package com.org.Triplens.DAO;
 
-import java.util.Optional;
+import java.util.List;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,7 @@ import com.org.Triplens.repository.UsersRepository;
 public class UsersDAOImpl implements UsersDao {
 	@Autowired
 	UsersRepository userRepository;
-	
+
 	@Autowired
 	PasswordEncryption passwordEncryption;
 
@@ -32,10 +32,10 @@ public class UsersDAOImpl implements UsersDao {
 	@Override
 	public Users findUsers(String email) throws NoUserFoundException {
 
-		Optional<Users> user = userRepository.findByEmail(email);
+		List<Users> users = userRepository.findByEmail(email);
 		try {
-			if (user.isPresent()) {
-				return user.get();
+			if (!users.isEmpty()) {
+				return users.get(0);
 			} else {
 				throw new NoUserFoundException();
 			}
@@ -47,33 +47,33 @@ public class UsersDAOImpl implements UsersDao {
 
 	@Override
 	public boolean authenticate(String email, String password)
-	        throws NoUserFoundException, PasswordIncorrectException {
+			throws NoUserFoundException, PasswordIncorrectException {
 
-	    Optional<Users> tempuser = userRepository.findByEmail(email);
+		List<Users> tempusers = userRepository.findByEmail(email);
 
-	    if (tempuser.isEmpty()) {
-	        throw new NoUserFoundException();
-	    }
+		if (tempusers.isEmpty()) {
+			throw new NoUserFoundException();
+		}
 
-	    Users entityUser = tempuser.get();
+		Users entityUser = tempusers.get(0);
 
-	    boolean isMatch = passwordEncryption.matches(
-	            password,                 // raw password from request
-	            entityUser.getPassword()  // encrypted password from DB
-	    );
+		boolean isMatch = passwordEncryption.matches(
+				password, // raw password from request
+				entityUser.getPassword() // encrypted password from DB
+		);
 
-	    if (isMatch) {
-	        return true;
-	    } else {
-	        throw new PasswordIncorrectException();
-	    }
+		if (isMatch) {
+			return true;
+		} else {
+			throw new PasswordIncorrectException();
+		}
 	}
 
 	@Override
 	public boolean addTrip(ObjectId id, ObjectId tripId) {
 		Users user = userRepository.findById(id).orElseThrow();
 		user.getTripList().add(tripId);
-		if(userRepository.save(user)!=null) {
+		if (userRepository.save(user) != null) {
 			return true;
 		}
 		return false;

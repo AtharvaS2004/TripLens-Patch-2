@@ -1,19 +1,21 @@
-import React, { useState } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
-import './Login.css'; // We'll need to create this or add styles to App.css
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { AlertCircle, Loader2 } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-const Login = ({ onLogin }) => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
+export default function Login({ onLogin }) {
     const navigate = useNavigate();
-    const location = useLocation();
-    const message = location.state?.message;
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        setError('');
+        setError("");
         setLoading(true);
 
         try {
@@ -21,8 +23,12 @@ const Login = ({ onLogin }) => {
             const authResponse = await fetch('http://localhost:8080/users/authenticate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({ email, password })
+                body: new URLSearchParams({ email, password }).toString()
             });
+
+            if (!authResponse.ok) {
+                throw new Error("Authentication check failed");
+            }
 
             const isAuthenticated = await authResponse.json();
 
@@ -31,13 +37,19 @@ const Login = ({ onLogin }) => {
                 const userResponse = await fetch('http://localhost:8080/users/finduser', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({ email })
+                    body: new URLSearchParams({ email }).toString()
                 });
+
+                if (!userResponse.ok) {
+                    throw new Error("Failed to fetch user details");
+                }
 
                 const userData = await userResponse.json();
 
                 if (userData && userData.userName) {
-                    onLogin(userData); // Pass full user object
+                    // Success: Store user and redirect
+                    if (onLogin) onLogin(userData);
+                    localStorage.setItem('user', JSON.stringify(userData));
                     navigate('/');
                 } else {
                     setError('Login successful but failed to retrieve user data.');
@@ -47,7 +59,7 @@ const Login = ({ onLogin }) => {
             }
         } catch (err) {
             console.error('Login error:', err);
-            if (err.message.includes('Failed to fetch')) {
+            if (err.message === 'Failed to fetch') {
                 setError('Cannot connect to server. Is the backend running on port 8080?');
             } else {
                 setError(err.message || 'An error occurred. Please try again.');
@@ -58,40 +70,96 @@ const Login = ({ onLogin }) => {
     };
 
     return (
-        <div className="auth-container">
-            <div className="auth-card">
-                <h2>Login</h2>
-                {message && <div className="alert-message">{message}</div>}
-                {error && <div className="error-message">{error}</div>}
-                <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label>Email</label>
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
+        <div className="w-full h-screen lg:grid lg:grid-cols-2">
+            {/* Left Side - Image */}
+            <div className="hidden lg:flex relative items-center justify-center bg-zinc-900 border-r border-zinc-800">
+                <div
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{
+                        backgroundImage: "url('/images/hero-travel.jpg')", // Reusing existing asset
+                        filter: "brightness(0.6)" // Darken slightly
+                    }}
+                />
+                <div className="relative z-10 text-center px-10">
+                    <div className="relative inline-block">
+                        <h1 className="text-5xl font-bold text-white tracking-tight mb-2">
+                            Plan. Pack. Explore.
+                        </h1>
+                        <div className="h-1.5 w-16 bg-orange-500 mx-auto rounded-full mt-2"></div>
                     </div>
-                    <div className="form-group">
-                        <label>Password</label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
+                </div>
+            </div>
+
+            {/* Right Side - Form */}
+            <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-background">
+                <div className="w-full max-w-[350px] space-y-6">
+                    <div className="flex flex-col space-y-2 text-left">
+                        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                            Welcome back
+                        </h1>
+                        <p className="text-sm text-muted-foreground">
+                            Enter your credentials to access your account
+                        </p>
                     </div>
-                    <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
-                        {loading ? 'Logging in...' : 'Login'}
-                    </button>
-                </form>
-                <div className="auth-footer">
-                    <p>Don't have an account? <Link to="/signup">Sign Up</Link></p>
+
+                    <form onSubmit={handleLogin} className="space-y-4">
+                        {error && (
+                            <Alert variant="destructive">
+                                <AlertCircle className="h-4 w-4" />
+                                <AlertTitle>Error</AlertTitle>
+                                <AlertDescription>{error}</AlertDescription>
+                            </Alert>
+                        )}
+                        <div className="space-y-2">
+                            <Label htmlFor="email">Email</Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                placeholder="you@example.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                                className="bg-background"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="password">Password</Label>
+                            <Input
+                                id="password"
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="••••••••"
+                                required
+                                className="bg-background"
+                            />
+                        </div>
+
+
+                        <Button
+                            type="submit"
+                            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold"
+                            disabled={loading}
+                        >
+                            {loading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Logging in...
+                                </>
+                            ) : (
+                                "Sign In"
+                            )}
+                        </Button>
+                    </form>
+
+                    <div className="text-center text-sm text-muted-foreground">
+                        New here?{" "}
+                        <Link to="/signup" className="text-orange-500 hover:text-orange-600 font-medium">
+                            Create Account
+                        </Link>
+                    </div>
                 </div>
             </div>
         </div>
     );
-};
-
-export default Login;
+}

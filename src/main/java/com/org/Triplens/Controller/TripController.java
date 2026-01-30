@@ -20,9 +20,10 @@ public class TripController {
 	TripServices tripService;
 
 	@PostMapping("/addTrip")
-	public String addTrip(@RequestParam("userId") String userId, @RequestBody TripDTO trip) {
+	public boolean addTrip(@RequestParam("userId") String userId, @RequestBody TripDTO trip) {
 		ObjectId userObjectId = new ObjectId(userId);
-		return tripService.addTrip(userObjectId, trip);
+		tripService.addTrip(userObjectId, trip);
+		return true;
 	}
 
 	@PostMapping("/getTripsByUserId")

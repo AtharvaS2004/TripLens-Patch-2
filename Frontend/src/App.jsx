@@ -5,7 +5,9 @@ import LandingPage from './components/LandingPage';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import CreateTrip from './components/CreateTrip';
-import CreateItinerary from './components/CreateItinerary';
+import RouteAnalysis from './components/RouteAnalysis';
+import DashboardPage from './components/Dashboard/DashboardPage';
+import { ItineraryPlanner } from './components/Itinerary/ItineraryPlanner';
 import './App.css';
 
 function App() {
@@ -32,13 +34,14 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <Navbar user={user} onLogout={handleLogout} />
         <Routes>
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<LandingPage user={user} onLogout={handleLogout} />} />
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
           <Route path="/signup" element={<Signup onLogin={handleLogin} />} />
           <Route path="/create-trip" element={<CreateTrip user={user} />} />
-          <Route path="/create-itinerary" element={<CreateItinerary user={user} />} />
+          <Route path="/route-analysis" element={<RouteAnalysis user={user} onLogout={handleLogout} />} />
+          <Route path="/my-trips" element={<DashboardPage user={user} onLogout={handleLogout} />} />
+          <Route path="/trip/:tripId" element={<ItineraryPlanner user={user} onLogout={handleLogout} />} />
         </Routes>
       </div>
     </Router>
