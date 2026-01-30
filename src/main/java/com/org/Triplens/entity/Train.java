@@ -9,167 +9,75 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Train extends Route {
 	@Id
 	private String id;
-
-	@org.springframework.data.mongodb.core.mapping.Field("train_no")
-	private String trainNumber;
-
-	@org.springframework.data.mongodb.core.mapping.Field("train_name")
-	private String trainName;
-
-	@org.springframework.data.mongodb.core.mapping.Field("origin_station")
-	private String originStation;
-
-	@org.springframework.data.mongodb.core.mapping.Field("origin_station_code")
-	private String originStationCode;
-
-	@org.springframework.data.mongodb.core.mapping.Field("destination_station")
-	private String destinationStation;
-
-	@org.springframework.data.mongodb.core.mapping.Field("destination_station_code")
-	private String destinationStationCode;
-
-	@org.springframework.data.mongodb.core.mapping.Field("intermediate_stations")
-	private List<String> intermediateStations;
-
-	@org.springframework.data.mongodb.core.mapping.Field("classes")
+	private String train_no;
+	private String train_name;
+	private String origin_station;
+	private String origin_station_code;
+	private String destination_station;
+	private String destination_station_code;
+	private List<String> intermediate_stations;
 	private List<String> classes;
-
-	@org.springframework.data.mongodb.core.mapping.Field("train_type")
-	private String trainType;
-
-	// New fields for Itinerary - Not in DB, populated in Service
-	@org.springframework.data.annotation.Transient
-	private String departureTime;
-
-	@org.springframework.data.annotation.Transient
-	private String arrivalTime;
-
-	@org.springframework.data.annotation.Transient
-	private String duration;
-
-	@org.springframework.data.annotation.Transient
-	private String origin;
-
-	@org.springframework.data.annotation.Transient
-	private String destination;
-
+	private String train_type;
 	public String getId() {
 		return id;
 	}
-
 	public void setId(String id) {
 		this.id = id;
 	}
-
-	public String getTrainNumber() {
-		return trainNumber;
+	public String getTrain_no() {
+		return train_no;
 	}
-
-	public void setTrainNumber(String trainNumber) {
-		this.trainNumber = trainNumber;
+	public void setTrain_no(String train_no) {
+		this.train_no = train_no;
 	}
-
-	public String getTrainName() {
-		return trainName;
+	public String getTrain_name() {
+		return train_name;
 	}
-
-	public void setTrainName(String trainName) {
-		this.trainName = trainName;
+	public void setTrain_name(String train_name) {
+		this.train_name = train_name;
 	}
-
-	public String getOriginStation() {
-		return originStation;
+	public String getOrigin_station() {
+		return origin_station;
 	}
-
-	public void setOriginStation(String originStation) {
-		this.originStation = originStation;
+	public void setOrigin_station(String origin_station) {
+		this.origin_station = origin_station;
 	}
-
-	public String getOriginStationCode() {
-		return originStationCode;
+	public String getOrigin_station_code() {
+		return origin_station_code;
 	}
-
-	public void setOriginStationCode(String originStationCode) {
-		this.originStationCode = originStationCode;
+	public void setOrigin_station_code(String origin_station_code) {
+		this.origin_station_code = origin_station_code;
 	}
-
-	public String getDestinationStation() {
-		return destinationStation;
+	public String getDestination_station() {
+		return destination_station;
 	}
-
-	public void setDestinationStation(String destinationStation) {
-		this.destinationStation = destinationStation;
+	public void setDestination_station(String destination_station) {
+		this.destination_station = destination_station;
 	}
-
-	public String getDestinationStationCode() {
-		return destinationStationCode;
+	public String getDestination_station_code() {
+		return destination_station_code;
 	}
-
-	public void setDestinationStationCode(String destinationStationCode) {
-		this.destinationStationCode = destinationStationCode;
+	public void setDestination_station_code(String destination_station_code) {
+		this.destination_station_code = destination_station_code;
 	}
-
-	public List<String> getIntermediateStations() {
-		return intermediateStations;
+	public List<String> getIntermediate_stations() {
+		return intermediate_stations;
 	}
-
-	public void setIntermediateStations(List<String> intermediateStations) {
-		this.intermediateStations = intermediateStations;
+	public void setIntermediate_stations(List<String> intermediate_stations) {
+		this.intermediate_stations = intermediate_stations;
 	}
-
 	public List<String> getClasses() {
 		return classes;
 	}
-
 	public void setClasses(List<String> classes) {
 		this.classes = classes;
 	}
-
-	public String getTrainType() {
-		return trainType;
+	public String getTrain_type() {
+		return train_type;
 	}
-
-	public void setTrainType(String trainType) {
-		this.trainType = trainType;
+	public void setTrain_type(String train_type) {
+		this.train_type = train_type;
 	}
-
-	public String getDepartureTime() {
-		return departureTime;
-	}
-
-	public void setDepartureTime(String departureTime) {
-		this.departureTime = departureTime;
-	}
-
-	public String getArrivalTime() {
-		return arrivalTime;
-	}
-
-	public void setArrivalTime(String arrivalTime) {
-		this.arrivalTime = arrivalTime;
-	}
-
-	public String getDuration() {
-		return duration;
-	}
-
-	public void setDuration(String duration) {
-		this.duration = duration;
-	}
-
-	public String getOrigin() {
-		return origin;
-	}
-
-	public void setOrigin(String origin) {
-		this.origin = origin;
-	}
-
-	public String getDestination() {
-		return destination;
-	}
-
-	public void setDestination(String destination) {
-		this.destination = destination;
-	}
+	
+	
 }
