@@ -40,7 +40,7 @@ public class TouristSpotService {
                     "&ggscoord=" + coords[0] + "|" + coords[1] +
                     "&ggsradius=10000" +
                     "&ggslimit=50" +
-                    "&prop=pageimages|extracts|info" +
+                    "&prop=pageimages|extracts|info|coordinates" + // Added coordinates
                     "&pithumbsize=600" +
                     "&exintro=true" +
                     "&explaintext=true" +
@@ -132,6 +132,16 @@ public class TouristSpotService {
                     map.put("description", page.optString("extract", "A famous tourist destination."));
                     map.put("distance_km", "In " + location);
                     map.put("type", "Top Attraction");
+
+                    // Parse Coordinates
+                    if (page.has("coordinates")) {
+                        JSONArray coordsArr = page.getJSONArray("coordinates");
+                        if (coordsArr.length() > 0) {
+                            JSONObject c = coordsArr.getJSONObject(0);
+                            map.put("lat", String.valueOf(c.getDouble("lat")));
+                            map.put("lon", String.valueOf(c.getDouble("lon"))); // Wiki uses 'lon'
+                        }
+                    }
 
                     if (page.has("thumbnail")) {
                         map.put("image_url", page.getJSONObject("thumbnail").optString("source"));

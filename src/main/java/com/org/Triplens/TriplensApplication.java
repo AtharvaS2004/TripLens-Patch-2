@@ -10,7 +10,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 		"com.org.Triplens.passwordEncryption",
 		"com.org.Triplens.Services", "com.org.Triplens.DAO", "com.org.Triplens.ingestion",
 		"com.org.Triplens.repository.TrainSearch",
-		"com.org.Triplens.SingleRoute" })
+		"com.org.Triplens.SingleRoute", "com.org.Triplens.MultiRoute" })
 @EnableMongoRepositories("com.org.Triplens.repository")
 @org.springframework.boot.autoconfigure.domain.EntityScan("com.org.Triplens.entity")
 @EnableAsync
