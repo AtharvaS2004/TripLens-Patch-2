@@ -1,0 +1,163 @@
+.itinerary-container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    font-family: 'Inter', sans-serif;
+    color: #333;
+}
+
+.itinerary-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.itinerary-header h1 {
+    font-size: 2.5rem;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.section-images,
+.section-festivals,
+.section-transport {
+    margin-bottom: 4rem;
+}
+
+h2 {
+    font-size: 1.8rem;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+    display: inline-block;
+}
+
+/* Images Grid */
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.image-card {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.image-card:hover {
+    transform: translateY(-5px);
+}
+
+.image-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+.image-card p {
+    padding: 1rem;
+    font-weight: 600;
+    text-align: center;
+    background: #fff;
+    margin: 0;
+}
+
+/* Festival List */
+.festival-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.festival-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border-left: 5px solid #e67e22;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.festival-card h3 {
+    margin-top: 0;
+    color: #e67e22;
+}
+
+.tag {
+    display: inline-block;
+    background: #e67e22;
+    color: white;
+    padding: 0.2rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    margin-top: 1rem;
+}
+
+/* Transport Tabs */
+.transport-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.transport-tabs button {
+    padding: 0.8rem 2rem;
+    border: none;
+    border-radius: 30px;
+    background: #ecf0f1;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.transport-tabs button.active {
+    background: #3498db;
+    color: white;
+    box-shadow: 0 4px 10px rgba(52, 152, 219, 0.4);
+}
+
+.transport-content {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 12px;
+    min-height: 200px;
+}
+
+.transport-option {
+    background: white;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.transport-option:hover {
+    border-color: #3498db;
+}
+
+.transport-option.selected {
+    border-color: #3498db;
+    background-color: #ebf5fb;
+}
+
+.save-btn {
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    margin: 2rem auto;
+    padding: 1rem;
+    background: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.save-btn:hover {
+    background: #219150;
+}

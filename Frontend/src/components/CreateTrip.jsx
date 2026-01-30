@@ -65,8 +65,17 @@ const CreateTrip = ({ user }) => {
             });
 
             if (response.ok) {
-                alert('Trip created successfully!');
-                navigate('/');
+                const tripId = await response.text();
+                // alert('Trip created successfully!'); // Optional: remove or keep
+                navigate('/create-itinerary', {
+                    state: {
+                        tripId: tripId,
+                        destination: formData.destination,
+                        startLocation: formData.startLocation,
+                        startDate: formData.startDate,
+                        endDate: formData.endDate
+                    }
+                });
             } else {
                 throw new Error('Failed to create trip');
             }

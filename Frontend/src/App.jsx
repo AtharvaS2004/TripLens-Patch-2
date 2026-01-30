@@ -5,6 +5,7 @@ import LandingPage from './components/LandingPage';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import CreateTrip from './components/CreateTrip';
+import CreateItinerary from './components/CreateItinerary';
 import './App.css';
 
 function App() {
@@ -37,6 +38,7 @@ function App() {
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
           <Route path="/signup" element={<Signup onLogin={handleLogin} />} />
           <Route path="/create-trip" element={<CreateTrip user={user} />} />
+          <Route path="/create-itinerary" element={<CreateItinerary user={user} />} />
         </Routes>
       </div>
     </Router>
