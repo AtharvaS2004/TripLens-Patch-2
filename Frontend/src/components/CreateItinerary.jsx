@@ -16,8 +16,53 @@ const CreateItinerary = ({ user }) => {
     const [flights, setFlights] = useState([]);
     const [selectedTransport, setSelectedTransport] = useState(null);
 
-    const [routeCoordinates, setRouteCoordinates] = useState([]);
+    const [transportRouteCoordinates, setTransportRouteCoordinates] = useState([]);
+    const [adventureRouteCoordinates, setAdventureRouteCoordinates] = useState([]);
+    const [selectedSpots, setSelectedSpots] = useState([]);
     const [error, setError] = useState(null);
+    const [adventureError, setAdventureError] = useState(null);
+
+    const handleAddSpot = (spot) => {
+        if (!selectedSpots.find(s => s.name === spot.name)) {
+            setSelectedSpots([...selectedSpots, spot]);
+        }
+    };
+
+    const handleMultiRoute = async () => {
+        if (selectedSpots.length === 0) return;
+
+        console.log("[CreateItinerary] Generating Multi-Stop Route...");
+        const coords = selectedSpots.map(s => {
+            // Parse lat/lon if they exist implies string, else try to use what we have
+            return [parseFloat(s.lon || 0), parseFloat(s.lat || 0)];
+        }).filter(c => c[0] !== 0 && c[1] !== 0);
+
+        if (coords.length < 2) {
+            setAdventureError("Please select at least 2 spots with valid coordinates.");
+            return;
+        }
+
+        try {
+            const res = await fetch('http://localhost:8080/api/route', { // Reverted to generic endpoint
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ coordinates: coords })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                if (data.features && data.features.length > 0) {
+                    const path = data.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                    setAdventureRouteCoordinates(path);
+                    setAdventureError(null);
+                }
+            } else {
+                setAdventureError("Failed to generate adventure route.");
+            }
+        } catch (err) {
+            setAdventureError("Network error generating route.");
+        }
+    };
 
     useEffect(() => {
         if (!tripId) {
@@ -57,52 +102,35 @@ const CreateItinerary = ({ user }) => {
     };
 
     const fetchTransport = async (mode) => {
-        // if (mode === 'car') return; // No API for car yet -> Now implemented below
-
         console.log(`[CreateItinerary] Fetching ${mode} for ${startLocation} -> ${destination}`);
         try {
             if (mode === 'train') {
                 const url = `http://localhost:8080/api/trains/search?origin=${startLocation}&destination=${destination}`;
-                console.log(`[CreateItinerary] Calling Train API: ${url}`);
                 const res = await fetch(url, { method: 'POST' });
-
-                console.log(`[CreateItinerary] Train API Status: ${res.status}`);
                 if (res.ok) {
                     const data = await res.json();
-                    console.log('[CreateItinerary] Train Data:', data);
                     setTrains(data);
-                } else {
-                    console.error('[CreateItinerary] Train API Failed');
                 }
             } else if (mode === 'flight') {
                 const url = `http://localhost:8080/api/flights/search?from=${startLocation}&to=${destination}`;
-                console.log(`[CreateItinerary] Calling Flight API: ${url}`);
                 const res = await fetch(url);
-                console.log(`[CreateItinerary] Flight API Status: ${res.status}`);
                 if (res.ok) {
                     const data = await res.json();
-                    console.log('[CreateItinerary] Flight Data:', data);
                     setFlights(data);
-                } else {
-                    console.error('[CreateItinerary] Flight API Failed');
                 }
             } else if (mode === 'car') {
                 const url = `http://localhost:8080/api/route?from=${startLocation}&to=${destination}`;
-                console.log(`[CreateItinerary] Calling Route API: ${url}`);
                 const res = await fetch(url);
                 if (res.ok) {
                     const data = await res.json();
-                    console.log('[CreateItinerary] Route Data:', data);
-                    // GeoJSON coordinates are [lng, lat], Leaflet needs [lat, lng]
                     if (data.features && data.features.length > 0) {
                         const coords = data.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
-                        setRouteCoordinates(coords);
+                        setTransportRouteCoordinates(coords);
                         setError(null);
                     } else {
                         setError("No route found between these locations.");
                     }
                 } else {
-                    console.error('[CreateItinerary] Route API Failed');
                     setError("Failed to fetch route. Please check backend configuration (API Key).");
                 }
             }
@@ -121,7 +149,6 @@ const CreateItinerary = ({ user }) => {
     };
 
     const handleSaveItinerary = async () => {
-        // Placeholder for saving optimization logic
         alert("Itinerary Saved! (Functionality to be implemented)");
         navigate('/');
     };
@@ -143,12 +170,64 @@ const CreateItinerary = ({ user }) => {
                         images.map((img, index) => (
                             <div key={index} className="image-card">
                                 <img src={img.image_url || 'https://via.placeholder.com/300'} alt={img.name} />
-                                <p>{img.name}</p>
+                                <div className="card-content">
+                                    <p>{img.name}</p>
+                                    <button
+                                        className="add-spot-btn"
+                                        onClick={() => handleAddSpot(img)}
+                                        style={{ marginTop: '5px', padding: '5px 10px', background: '#3498db', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                                    >
+                                        + ADD
+                                    </button>
+                                </div>
                             </div>
                         ))
                     ) : (
                         <p>No images found.</p>
                     )}
+                </div>
+
+                {/* Adventure Map Section */}
+                <div className="adventure-section" style={{ marginTop: '25px', padding: '20px', background: '#f8f9fa', borderRadius: '12px', border: '1px solid #e9ecef' }}>
+                    <div className="adventure-controls">
+                        <h3 style={{ marginBottom: '10px' }}>🗺️ Build Your Adventure Route</h3>
+                        <p style={{ color: '#666', marginBottom: '15px' }}>Select spots from above to create your custom journey within {destination}!</p>
+
+                        {selectedSpots.length > 0 && (
+                            <div className="selected-spots-list" style={{ marginBottom: '20px' }}>
+                                <p><strong>Your Stops:</strong></p>
+                                <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px' }}>
+                                    {selectedSpots.map((s, i) => (
+                                        <li key={i} style={{ background: 'white', padding: '5px 12px', borderRadius: '20px', border: '1px solid #ddd', fontSize: '14px' }}>
+                                            📍 {s.name}
+                                        </li>
+                                    ))}
+                                </ul>
+                                <button
+                                    onClick={handleMultiRoute}
+                                    className="generate-route-btn"
+                                    style={{ marginTop: '15px', padding: '10px 24px', background: '#27ae60', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+                                >
+                                    Generate Adventure Route 🚀
+                                </button>
+                            </div>
+                        )}
+
+                        {adventureError && <p style={{ color: '#e74c3c', marginTop: '10px' }}>⚠️ {adventureError}</p>}
+
+                        {adventureRouteCoordinates.length > 0 && (
+                            <div style={{ marginTop: '20px', height: '400px', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+                                <MapView
+                                    routeCoordinates={adventureRouteCoordinates}
+                                    markers={selectedSpots.map(s => ({
+                                        lat: parseFloat(s.lat || 0),
+                                        lon: parseFloat(s.lon || 0),
+                                        name: s.name
+                                    }))}
+                                />
+                            </div>
+                        )}
+                    </div>
                 </div>
             </section>
 
@@ -238,21 +317,22 @@ const CreateItinerary = ({ user }) => {
                     {transportMode === 'car' && (
                         <div className="car-option">
                             <p><strong>Road Trip:</strong> {startLocation} ➝ {destination}</p>
-                            {routeCoordinates.length > 0 ? (
-                                <MapView routeCoordinates={routeCoordinates} />
+                            {transportRouteCoordinates.length > 0 ? (
+                                <div style={{ height: '500px', width: '100%', borderRadius: '12px', overflow: 'hidden', marginTop: '10px' }}>
+                                    <MapView routeCoordinates={transportRouteCoordinates} />
+                                </div>
                             ) : (
                                 <p>{error ? <span style={{ color: 'red' }}>{error}</span> : "Loading route..."}</p>
                             )}
                         </div>
-                    )
-                    }
-                </div >
-            </section >
+                    )}
+                </div>
+            </section>
 
             <button className="save-btn" onClick={handleSaveItinerary}>
                 Save Itinerary
             </button>
-        </div >
+        </div>
     );
 };
 
