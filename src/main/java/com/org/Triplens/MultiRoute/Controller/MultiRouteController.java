@@ -43,9 +43,14 @@ public class MultiRouteController {
 
                 HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
-                RestTemplate restTemplate = new RestTemplate();
-                ResponseEntity<String> response = restTemplate.postForEntity(orsUrl, entity, String.class);
-
-                return ResponseEntity.ok(response.getBody());
+                try {
+                        RestTemplate restTemplate = new RestTemplate();
+                        ResponseEntity<String> response = restTemplate.postForEntity(orsUrl, entity, String.class);
+                        return ResponseEntity.ok(response.getBody());
+                } catch (Exception e) {
+                        e.printStackTrace();
+                        return ResponseEntity.status(500)
+                                        .body("{\"error\": \"Failed to route: " + e.getMessage() + "\"}");
+                }
         }
 }

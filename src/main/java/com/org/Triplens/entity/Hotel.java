@@ -1,6 +1,8 @@
 package com.org.Triplens.entity;
 
 import org.bson.types.ObjectId;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -8,6 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Hotel {
 
     @Id
+    @JsonSerialize(using = ToStringSerializer.class)
     private ObjectId id;
 
     private String name;
@@ -15,11 +18,12 @@ public class Hotel {
     private String address;
     private double pricePerNight;
     private int rating; // 1 to 5 stars
-    private boolean wifiAvailable;
-    private boolean parkingAvailable;
+    private Object wifiAvailable;
+    private Object parkingAvailable;
 
     // Constructors
-    public Hotel() {}
+    public Hotel() {
+    }
 
     public Hotel(String name, String city, String address, double pricePerNight, int rating) {
         this.name = name;
@@ -79,18 +83,28 @@ public class Hotel {
     }
 
     public boolean isWifiAvailable() {
-        return wifiAvailable;
+        if (wifiAvailable instanceof Boolean) {
+            return (Boolean) wifiAvailable;
+        } else if (wifiAvailable instanceof Number) {
+            return ((Number) wifiAvailable).intValue() > 0;
+        }
+        return false;
     }
 
-    public void setWifiAvailable(boolean wifiAvailable) {
+    public void setWifiAvailable(Object wifiAvailable) {
         this.wifiAvailable = wifiAvailable;
     }
 
     public boolean isParkingAvailable() {
-        return parkingAvailable;
+        if (parkingAvailable instanceof Boolean) {
+            return (Boolean) parkingAvailable;
+        } else if (parkingAvailable instanceof Number) {
+            return ((Number) parkingAvailable).intValue() > 0;
+        }
+        return false;
     }
 
-    public void setParkingAvailable(boolean parkingAvailable) {
+    public void setParkingAvailable(Object parkingAvailable) {
         this.parkingAvailable = parkingAvailable;
     }
 }

@@ -17,6 +17,7 @@ const Navbar = ({ user, onLogout }) => {
                     {user ? (
                         <div className="user-info">
                             <span className="user-name">Welcome, {user.userName}</span>
+                            <Link to="/profile" className="btn btn-sm btn-light" style={{ marginRight: '10px' }}>Profile</Link>
                             <button onClick={onLogout} className="btn btn-outline">Logout</button>
                         </div>
                     ) : (

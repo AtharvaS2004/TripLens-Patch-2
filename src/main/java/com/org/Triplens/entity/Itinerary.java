@@ -35,7 +35,7 @@ public class Itinerary {
 		this.tripId = tripId;
 	}
 
-	public List< String> getDayPlans() {
+	public List<String> getDayPlans() {
 		return dayPlans;
 	}
 
@@ -67,4 +67,23 @@ public class Itinerary {
 		this.festivals = festivals;
 	}
 
+	// New Fields for Enhanced Itinerary
+	private List<java.util.Map<String, String>> selectedSpots;
+	private List<List<Double>> adventureRouteCoordinates;
+
+	public List<java.util.Map<String, String>> getSelectedSpots() {
+		return selectedSpots;
+	}
+
+	public void setSelectedSpots(List<java.util.Map<String, String>> selectedSpots) {
+		this.selectedSpots = selectedSpots;
+	}
+
+	public List<List<Double>> getAdventureRouteCoordinates() {
+		return adventureRouteCoordinates;
+	}
+
+	public void setAdventureRouteCoordinates(List<List<Double>> adventureRouteCoordinates) {
+		this.adventureRouteCoordinates = adventureRouteCoordinates;
+	}
 }

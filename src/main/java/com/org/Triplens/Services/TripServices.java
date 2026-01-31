@@ -52,8 +52,24 @@ public class TripServices {
 		return tripId.toString();
 	}
 
-	public List<Trip> getTripsByUserId(ObjectId userId) {
-		return tripDao.getTripsByUserId(userId);
+	public java.util.Map<String, List<Trip>> getTripsByUserId(ObjectId userId) {
+		List<Trip> allTrips = tripDao.getTripsByUserId(userId);
+		List<Trip> createdTrips = new ArrayList<>();
+		List<Trip> sharedTrips = new ArrayList<>();
+
+		for (Trip trip : allTrips) {
+			if (trip.getOwnerUserId().equals(userId)) {
+				createdTrips.add(trip);
+			} else {
+				sharedTrips.add(trip);
+			}
+		}
+
+		java.util.Map<String, List<Trip>> result = new java.util.HashMap<>();
+		result.put("created_trips", createdTrips);
+		result.put("shared_trips", sharedTrips);
+
+		return result;
 	}
 
 	public void updateTripStatus(ObjectId tripId, Boolean status) {

@@ -6,6 +6,8 @@ import Login from './components/Login';
 import Signup from './components/Signup';
 import CreateTrip from './components/CreateTrip';
 import CreateItinerary from './components/CreateItinerary';
+import ShareTrip from './components/ShareTrip';
+import UserProfile from './components/UserProfile';
 import './App.css';
 
 function App() {
@@ -39,6 +41,8 @@ function App() {
           <Route path="/signup" element={<Signup onLogin={handleLogin} />} />
           <Route path="/create-trip" element={<CreateTrip user={user} />} />
           <Route path="/create-itinerary" element={<CreateItinerary user={user} />} />
+          <Route path="/share-trip" element={<ShareTrip user={user} />} />
+          <Route path="/profile" element={<UserProfile user={user} />} />
         </Routes>
       </div>
     </Router>
