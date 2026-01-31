@@ -7,10 +7,14 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+
 @Document(collection = "trips")
 public class Trip {
 
 	@Id
+	@JsonSerialize(using = ToStringSerializer.class)
 	private ObjectId id;
 
 	private String title;
@@ -20,10 +24,12 @@ public class Trip {
 	private String endDate;
 	private Integer travelers;
 
+	@JsonSerialize(using = ToStringSerializer.class)
 	private ObjectId ownerUserId;
 
 	private List<SharedUser> sharedUsers;
 
+	@JsonSerialize(using = ToStringSerializer.class)
 	private ObjectId itineraryId;
 
 	private Instant createdAt;

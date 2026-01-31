@@ -1,0 +1,93 @@
+.profile-container {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.profile-header h2 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.profile-header p {
+    color: #7f8c8d;
+    font-size: 1.1em;
+}
+
+.trips-section h3 {
+    margin-bottom: 20px;
+    color: #34495e;
+}
+
+.trips-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.trip-card {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.trip-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.trip-info h4 {
+    margin: 0 0 5px 0;
+    color: #2c3e50;
+    font-size: 1.2em;
+}
+
+.trip-info p {
+    margin: 0;
+    color: #7f8c8d;
+    font-size: 0.9em;
+}
+
+.trip-status {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+}
+
+.trip-status.active {
+    background-color: #e8f8f5;
+    color: #27ae60;
+}
+
+.trip-status.completed {
+    background-color: #f4f6f7;
+    color: #7f8c8d;
+}
+
+.loading,
+.error,
+.no-trips {
+    text-align: center;
+    padding: 20px;
+    color: #7f8c8d;
+}
+
+.error {
+    color: #e74c3c;
+}

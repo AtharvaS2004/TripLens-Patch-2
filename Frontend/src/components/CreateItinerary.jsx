@@ -3,248 +3,372 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import MapView from './MapView';
 import './CreateItinerary.css';
 
+const getRandomHotelImage = (index) => {
+    const images = [
+        'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=500&q=80', // Resort
+        'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=500&q=80', // Luxury
+        'https://images.unsplash.com/photo-1571896349842-6e5c4e375615?auto=format&fit=crop&w=500&q=80', // Bedroom
+        'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=500&q=80', // Pool
+        'https://images.unsplash.com/photo-1455587734955-081b22074882?auto=format&fit=crop&w=500&q=80', // Modern
+        'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&fit=crop&w=500&q=80', // Cozy
+        'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=500&q=80', // Boutique
+        'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=500&q=80', // Classic
+        'https://images.unsplash.com/photo-1517840901100-8179e982acb7?auto=format&fit=crop&w=500&q=80', // City View
+        'https://images.unsplash.com/photo-1563911302283-d2bc129e7c1f?auto=format&fit=crop&w=500&q=80', // Tropical
+        'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=500&q=80', // Business
+        'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=500&q=80', // Modern Room
+        'https://images.unsplash.com/photo-1590490360182-c33d57733527?auto=format&fit=crop&w=500&q=80', // Lounge
+        'https://images.unsplash.com/photo-1549294413-26f195200c16?auto=format&fit=crop&w=500&q=80', // Spa
+        'https://images.unsplash.com/photo-1560200353-ce0a76b1d438?auto=format&fit=crop&w=500&q=80', // Business Center
+        'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?auto=format&fit=crop&w=500&q=80', // Balcony
+        'https://images.unsplash.com/photo-1522771753035-4848230d3fad?auto=format&fit=crop&w=500&q=80'  // Minimalist
+    ];
+    // Use index to deterministically pick an image so it doesn't change on re-render
+    return images[index % images.length];
+};
+
 const CreateItinerary = ({ user }) => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { tripId, destination, startLocation, startDate, endDate } = location.state || {};
+    const { destination, startLocation, date, tripId } = location.state || { destination: 'Paris', startLocation: 'London', date: '' };
 
-    const [loading, setLoading] = useState(true);
-    const [festivals, setFestivals] = useState([]);
-    const [images, setImages] = useState([]);
-    const [transportMode, setTransportMode] = useState('train'); // 'train', 'flight', 'car'
+    const [hotels, setHotels] = useState([]);
+    const [selectedHotel, setSelectedHotel] = useState(null);
+    const [transportMode, setTransportMode] = useState('train');
     const [trains, setTrains] = useState([]);
     const [flights, setFlights] = useState([]);
     const [selectedTransport, setSelectedTransport] = useState(null);
-
     const [transportRouteCoordinates, setTransportRouteCoordinates] = useState([]);
-    const [adventureRouteCoordinates, setAdventureRouteCoordinates] = useState([]);
-    const [selectedSpots, setSelectedSpots] = useState([]);
-    const [error, setError] = useState(null);
-    const [adventureError, setAdventureError] = useState(null);
+    const [error, setError] = useState('');
 
-    const handleAddSpot = (spot) => {
-        if (!selectedSpots.find(s => s.name === spot.name)) {
+    const [markers, setMarkers] = useState([]);
+
+    // Tourist Spots & Adventure Map State
+    const [touristSpots, setTouristSpots] = useState([]);
+    const [selectedSpots, setSelectedSpots] = useState([]);
+    const [adventureRoute, setAdventureRoute] = useState([]);
+    const [adventureMarkers, setAdventureMarkers] = useState([]);
+
+    // Festivals State
+    const [festivals, setFestivals] = useState([]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                // Fetch Hotels
+                if (destination) {
+                    try {
+                        const hotelRes = await fetch(`http://localhost:8080/api/hotels/${destination}`);
+                        if (hotelRes.ok) {
+                            const hotelData = await hotelRes.json();
+                            setHotels(hotelData);
+                        }
+                    } catch (e) {
+                        console.error("Hotel fetch error", e);
+                    }
+
+                    // Fetch Tourist Spots
+                    try {
+                        const spotRes = await fetch(`http://localhost:8080/api/spots/nearby?location=${destination}`);
+                        if (spotRes.ok) {
+                            const spotData = await spotRes.json();
+                            setTouristSpots(spotData);
+                        }
+                    } catch (e) {
+                        console.error("Spot fetch error", e);
+                    }
+
+                    // Fetch Festivals
+                    try {
+                        const festRes = await fetch(`http://localhost:8080/api/festivals?city=${destination}`);
+                        if (festRes.ok) {
+                            const festData = await festRes.json();
+                            setFestivals(festData);
+                        }
+                    } catch (e) {
+                        console.error("Festival fetch error", e);
+                    }
+                }
+
+                if (startLocation && destination) {
+                    // Fetch Trains
+                    try {
+                        const trainRes = await fetch(`http://localhost:8080/api/trains/search?origin=${startLocation}&destination=${destination}`, {
+                            method: 'POST'
+                        });
+                        if (trainRes.ok) {
+                            const trainData = await trainRes.json();
+                            setTrains(trainData);
+                        }
+                    } catch (e) {
+                        console.error("Train fetch error", e);
+                    }
+
+                    // Fetch Flights
+                    try {
+                        const flightRes = await fetch(`http://localhost:8080/api/flights/search?from=${startLocation}&to=${destination}&date=${date || ''}`);
+                        if (flightRes.ok) {
+                            const flightData = await flightRes.json();
+                            setFlights(flightData);
+                        }
+                    } catch (e) {
+                        console.error("Flight fetch error", e);
+                    }
+
+                    // Fetch Route for Car (Restore Map Feature)
+                    try {
+                        const fetchCoords = async (city) => {
+                            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${city}`);
+                            const data = await res.json();
+                            if (data && data.length > 0) return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+                            return null;
+                        };
+
+                        const startCoords = await fetchCoords(startLocation);
+                        const destCoords = await fetchCoords(destination);
+
+                        if (startCoords && destCoords) {
+                            // Set Markers
+                            setMarkers([
+                                { lat: startCoords[0], lon: startCoords[1], name: `Start: ${startLocation}` },
+                                { lat: destCoords[0], lon: destCoords[1], name: `Destination: ${destination}` }
+                            ]);
+
+                            // Get Route
+                            const routeRes = await fetch(`http://router.project-osrm.org/route/v1/driving/${startCoords[1]},${startCoords[0]};${destCoords[1]},${destCoords[0]}?overview=full&geometries=geojson`);
+                            const routeData = await routeRes.json();
+
+                            if (routeData.routes && routeData.routes.length > 0) {
+                                const coordinates = routeData.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]); // Swap to [lat, lon]
+                                setTransportRouteCoordinates(coordinates);
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Route fetch error", e);
+                        setError("Could not load map route.");
+                    }
+                }
+            } catch (err) {
+                console.error("Error fetching data:", err);
+                setError("Failed to load some data. Please check backend connection.");
+            }
+        };
+
+        fetchData();
+    }, [destination, startLocation, date]);
+
+    const handleSpotSelect = (spot) => {
+        if (selectedSpots.includes(spot)) {
+            setSelectedSpots(selectedSpots.filter(s => s !== spot));
+        } else {
             setSelectedSpots([...selectedSpots, spot]);
         }
     };
 
-    const handleMultiRoute = async () => {
-        if (selectedSpots.length === 0) return;
-
-        console.log("[CreateItinerary] Generating Multi-Stop Route...");
-        const coords = selectedSpots.map(s => {
-            // Parse lat/lon if they exist implies string, else try to use what we have
-            return [parseFloat(s.lon || 0), parseFloat(s.lat || 0)];
-        }).filter(c => c[0] !== 0 && c[1] !== 0);
-
-        if (coords.length < 2) {
-            setAdventureError("Please select at least 2 spots with valid coordinates.");
+    const handleGenerateAdventureRoute = async () => {
+        if (selectedSpots.length < 2) {
+            alert("Please select at least 2 spots to generate a route.");
             return;
         }
 
-        try {
-            const res = await fetch('http://localhost:8080/api/route', { // Reverted to generic endpoint
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ coordinates: coords })
-            });
-
-            if (res.ok) {
+        const spotsWithCoords = await Promise.all(selectedSpots.map(async (spot) => {
+            if (spot.lat && spot.lon) return { ...spot, lat: parseFloat(spot.lat), lon: parseFloat(spot.lon) };
+            // Fallback to geocoding if lat/lon missing
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${spot.title || spot.name}`);
                 const data = await res.json();
-                if (data.features && data.features.length > 0) {
-                    const path = data.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
-                    setAdventureRouteCoordinates(path);
-                    setAdventureError(null);
-                }
-            } else {
-                setAdventureError("Failed to generate adventure route.");
-            }
-        } catch (err) {
-            setAdventureError("Network error generating route.");
-        }
-    };
+                if (data && data.length > 0) return { ...spot, lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+            } catch (e) { console.error("Geocode error for spot", spot); }
+            return null;
+        }));
 
-    useEffect(() => {
-        if (!tripId) {
-            navigate('/create-trip');
+        const validSpots = spotsWithCoords.filter(s => s !== null);
+        setAdventureMarkers(validSpots.map(s => ({ lat: s.lat, lon: s.lon, name: s.title || s.name })));
+
+        if (validSpots.length < 2) {
+            alert("Could not find coordinates for enough spots.");
             return;
         }
-        fetchData();
-    }, [tripId, destination, startLocation]);
 
-    const fetchData = async () => {
-        setLoading(true);
+        // OSRM Trip API (Optimized)
+        const coordString = validSpots.map(s => `${s.lon},${s.lat}`).join(';');
+
         try {
-            // Parallel fetching
-            const [festivalsRes, imagesRes] = await Promise.allSettled([
-                fetch(`http://localhost:8080/api/festivals?city=${destination}`),
-                fetch(`http://localhost:8080/api/spots/nearby?location=${destination}`)
-            ]);
-
-            if (festivalsRes.status === 'fulfilled') {
-                const data = await festivalsRes.value.json();
-                setFestivals(data.slice(0, 5)); // Limit to 5
+            const tripRes = await fetch(`http://router.project-osrm.org/trip/v1/driving/${coordString}?overview=full&geometries=geojson`);
+            const tripData = await tripRes.json();
+            if (tripData.trips && tripData.trips.length > 0) {
+                const coordinates = tripData.trips[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                setAdventureRoute(coordinates);
             }
-
-            if (imagesRes.status === 'fulfilled') {
-                const data = await imagesRes.value.json();
-                setImages(data);
-            }
-
-            // Fetch initial transport data based on default mode (train)
-            fetchTransport('train');
-
-        } catch (error) {
-            console.error("Error fetching data:", error);
-        } finally {
-            setLoading(false);
+        } catch (e) {
+            console.error("Trip gen error", e);
         }
     };
 
-    const fetchTransport = async (mode) => {
-        console.log(`[CreateItinerary] Fetching ${mode} for ${startLocation} -> ${destination}`);
-        try {
-            if (mode === 'train') {
-                const url = `http://localhost:8080/api/trains/search?origin=${startLocation}&destination=${destination}`;
-                const res = await fetch(url, { method: 'POST' });
-                if (res.ok) {
-                    const data = await res.json();
-                    setTrains(data);
-                }
-            } else if (mode === 'flight') {
-                const url = `http://localhost:8080/api/flights/search?from=${startLocation}&to=${destination}`;
-                const res = await fetch(url);
-                if (res.ok) {
-                    const data = await res.json();
-                    setFlights(data);
-                }
-            } else if (mode === 'car') {
-                const url = `http://localhost:8080/api/route?from=${startLocation}&to=${destination}`;
-                const res = await fetch(url);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.features && data.features.length > 0) {
-                        const coords = data.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
-                        setTransportRouteCoordinates(coords);
-                        setError(null);
-                    } else {
-                        setError("No route found between these locations.");
-                    }
-                } else {
-                    setError("Failed to fetch route. Please check backend configuration (API Key).");
-                }
-            }
-        } catch (error) {
-            console.error(`Error fetching ${mode}s:`, error);
-            if (mode === 'car') {
-                setError(`Network Error: ${error.message}`);
-            }
-        }
+    const handleHotelSelect = (hotel) => {
+        setSelectedHotel(hotel === selectedHotel ? null : hotel);
     };
 
     const handleTransportChange = (mode) => {
         setTransportMode(mode);
-        setSelectedTransport(null);
-        fetchTransport(mode);
+        setSelectedTransport(null); // Reset selection on mode change
+    };
+
+    const handleTransportSelect = (transport) => {
+        setSelectedTransport(transport === selectedTransport ? null : transport);
     };
 
     const handleSaveItinerary = async () => {
-        alert("Itinerary Saved! (Functionality to be implemented)");
-        navigate('/');
-    };
+        if (!selectedHotel || !selectedTransport) {
+            alert("Please select both a hotel and a transport mode.");
+            return;
+        }
 
-    if (loading) return <div className="loading">Loading connection...</div>;
+        // Construct Route Object based on Transport Mode (Mapping to backend entities)
+        let routeObj = null;
+        if (selectedTransport === 'Car') {
+            routeObj = {
+                type: "CAR",
+                distanceKm: 0, // Calculate or default
+                fuelCost: 0
+            };
+        } else if (selectedTransport === 'Train') {
+            routeObj = { type: "TRAIN" }; // Simplified
+        } else if (selectedTransport === 'Flight') {
+            routeObj = { type: "FLIGHT" }; // Simplified
+        }
+
+        const payload = {
+            dayPlans: [`Day 1 in ${destination}`], // Placeholder structure
+            hotels: selectedHotel,
+            routes: routeObj,
+            festivals: festivals, // Saving all fetched festivals for now
+            selectedSpots: selectedSpots.map(s => ({
+                name: s.name || s.title,
+                description: s.description,
+                image_url: s.image_url || s.thumbnail
+            })),
+            adventureRouteCoordinates: adventureRoute
+        };
+
+        try {
+            // Use tripId from state or a default/generated one if missing (for testing)
+            const activeTripId = tripId || "65b925a07567890123456789"; // Replace with graceful fallback or alert if strictly required
+
+            const res = await fetch(`http://localhost:8080/api/itineraries/addItinerary?tripId=${activeTripId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert("Itinerary saved successfully!");
+                // Navigate to Share Trip page instead of Profile
+                navigate('/share-trip', { state: { tripId: activeTripId, destination } });
+            } else {
+                const errorText = await res.text();
+                console.error("Save failed:", res.status, errorText);
+                alert(`Failed to save: Server returned ${res.status} ${res.statusText}. Details: ${errorText}`);
+            }
+        } catch (e) {
+            console.error("Save error", e);
+            alert(`Error saving itinerary: ${e.message}. \n\nCheck console for details. Ensure backend is running and supported.`);
+        }
+    };
 
     return (
         <div className="itinerary-container">
-            <header className="itinerary-header">
-                <h1>Plan Your Trip to {destination}</h1>
-                <p>{startLocation} ➝ {destination} ({startDate} to {endDate})</p>
-            </header>
+            <div className="itinerary-header">
+                <h1>Trip to {destination}</h1>
+                {startLocation && <p>Starting from: {startLocation}</p>}
+            </div>
 
-            {/* Region Images Section */}
-            <section className="section-images">
-                <h2>Explore the Region</h2>
-                <div className="image-grid">
-                    {images.length > 0 ? (
-                        images.map((img, index) => (
-                            <div key={index} className="image-card">
-                                <img src={img.image_url || 'https://via.placeholder.com/300'} alt={img.name} />
-                                <div className="card-content">
-                                    <p>{img.name}</p>
-                                    <button
-                                        className="add-spot-btn"
-                                        onClick={() => handleAddSpot(img)}
-                                        style={{ marginTop: '5px', padding: '5px 10px', background: '#3498db', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                                    >
-                                        + ADD
-                                    </button>
+            {/* Hotels Section */}
+            <section className="section-hotels">
+                <h2>Stay in Comfort</h2>
+                {/* ... existing hotel code ... */}
+                <div className="hotel-list">
+                    {hotels.length > 0 ? (
+                        hotels.map((hotel, index) => (
+                            <div
+                                key={index}
+                                className={`hotel-card ${selectedHotel === hotel ? 'selected' : ''}`}
+                                onClick={() => handleHotelSelect(hotel)}
+                            >
+                                <img src={hotel.imageUrl || getRandomHotelImage(index)} alt={hotel.name} />
+                                <div className="hotel-info">
+                                    <h3>{hotel.name}</h3>
+                                    <p className="rating">⭐ {hotel.rating || '4.5'}</p>
+                                    <p className="price">₹{hotel.pricePerNight || '2500'}/night</p>
+                                    <p className="address">{hotel.address || destination}</p>
                                 </div>
                             </div>
                         ))
                     ) : (
-                        <p>No images found.</p>
+                        <div className="error-message">
+                            <p>No hotels found in {destination}.</p>
+                            {error && <p className="error-text">Backend Error: {error}</p>}
+                            {!error && <p>Loading or no data available...</p>}
+                        </div>
+                    )}
+                </div>
+            </section>
+
+            {/* Tourist Spots Section */}
+            <section className="section-attractions">
+                <h2>Explore Attractions</h2>
+                <div className="attraction-grid">
+                    {touristSpots.length > 0 ? (
+                        touristSpots.map((spot, index) => (
+                            <div
+                                key={index}
+                                className={`attraction-card ${selectedSpots.includes(spot) ? 'selected' : ''}`}
+                                onClick={() => handleSpotSelect(spot)}
+                            >
+                                {/* Use image_url from backend (Wiki Scraper) */}
+                                <img src={spot.image_url || "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500"} alt={spot.title || spot.name} />
+                                <div className="attraction-info">
+                                    <h3>{spot.title || spot.name}</h3>
+                                    <p>{spot.description ? spot.description.substring(0, 80) + "..." : "Interesting place to visit"}</p>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="error-message">
+                            {error ? <p className="error-text">Backend Error: {error}</p> : <p>Loading attractions...</p>}
+                        </div>
                     )}
                 </div>
 
-                {/* Adventure Map Section */}
-                <div className="adventure-section" style={{ marginTop: '25px', padding: '20px', background: '#f8f9fa', borderRadius: '12px', border: '1px solid #e9ecef' }}>
-                    <div className="adventure-controls">
-                        <h3 style={{ marginBottom: '10px' }}>🗺️ Build Your Adventure Route</h3>
-                        <p style={{ color: '#666', marginBottom: '15px' }}>Select spots from above to create your custom journey within {destination}!</p>
-
-                        {selectedSpots.length > 0 && (
-                            <div className="selected-spots-list" style={{ marginBottom: '20px' }}>
-                                <p><strong>Your Stops:</strong></p>
-                                <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px' }}>
-                                    {selectedSpots.map((s, i) => (
-                                        <li key={i} style={{ background: 'white', padding: '5px 12px', borderRadius: '20px', border: '1px solid #ddd', fontSize: '14px' }}>
-                                            📍 {s.name}
-                                        </li>
-                                    ))}
-                                </ul>
-                                <button
-                                    onClick={handleMultiRoute}
-                                    className="generate-route-btn"
-                                    style={{ marginTop: '15px', padding: '10px 24px', background: '#27ae60', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
-                                >
-                                    Generate Adventure Route 🚀
-                                </button>
-                            </div>
-                        )}
-
-                        {adventureError && <p style={{ color: '#e74c3c', marginTop: '10px' }}>⚠️ {adventureError}</p>}
-
-                        {adventureRouteCoordinates.length > 0 && (
-                            <div style={{ marginTop: '20px', height: '400px', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
-                                <MapView
-                                    routeCoordinates={adventureRouteCoordinates}
-                                    markers={selectedSpots.map(s => ({
-                                        lat: parseFloat(s.lat || 0),
-                                        lon: parseFloat(s.lon || 0),
-                                        name: s.name
-                                    }))}
-                                />
-                            </div>
-                        )}
-                    </div>
+                <div className="adventure-actions">
+                    <button className="generate-route-btn" onClick={handleGenerateAdventureRoute} disabled={selectedSpots.length < 2}>
+                        Generate Adventure Route 🗺️
+                    </button>
+                    {selectedSpots.length < 2 && <p className="hint-text">Select at least 2 spots to see the route.</p>}
                 </div>
+
+                {/* Adventure Map */}
+                {adventureRoute.length > 0 && (
+                    <div className="adventure-map-container" style={{ height: '500px', width: '100%', borderRadius: '12px', overflow: 'hidden', marginTop: '20px' }}>
+                        <h3>Top Adventure Route</h3>
+                        <MapView routeCoordinates={adventureRoute} markers={adventureMarkers} />
+                    </div>
+                )}
             </section>
 
             {/* Festivals Section */}
             <section className="section-festivals">
-                <h2>Upcoming Festivals</h2>
+                <h2>Local Festivals</h2>
                 <div className="festival-list">
                     {festivals.length > 0 ? (
-                        festivals.map((festival, index) => (
+                        festivals.map((fest, index) => (
                             <div key={index} className="festival-card">
-                                <h3>{festival.name}</h3>
-                                <p>{festival.description ? festival.description.substring(0, 100) + '...' : ''}</p>
-                                <span className="tag">{festival.month}</span>
+                                <h3>{fest.name}</h3>
+                                <p><strong>Month:</strong> {fest.month}</p>
                             </div>
                         ))
                     ) : (
-                        <p>No specific festivals found for this region.</p>
+                        <p>{error ? "Could not load festivals." : `No festivals found for ${destination || 'this location'}.`}</p>
                     )}
                 </div>
             </section>
@@ -281,7 +405,7 @@ const CreateItinerary = ({ user }) => {
                                     <div
                                         key={idx}
                                         className={`transport-option ${selectedTransport === train ? 'selected' : ''}`}
-                                        onClick={() => setSelectedTransport(train)}
+                                        onClick={() => handleTransportSelect(train)}
                                     >
                                         <h4>{train.trainName} ({train.trainNumber})</h4>
                                         <p>Departs: {train.departureTime} | Arrives: {train.arrivalTime}</p>
@@ -301,7 +425,7 @@ const CreateItinerary = ({ user }) => {
                                     <div
                                         key={idx}
                                         className={`transport-option ${selectedTransport === flight ? 'selected' : ''}`}
-                                        onClick={() => setSelectedTransport(flight)}
+                                        onClick={() => handleTransportSelect(flight)}
                                     >
                                         <h4>{flight.airline?.name || 'Airline'} - {flight.number || 'Flight'}</h4>
                                         <p>Price: ₹{flight.price || '5000'}</p>
@@ -309,7 +433,7 @@ const CreateItinerary = ({ user }) => {
                                     </div>
                                 ))
                             ) : (
-                                <p>No flights found for this date.</p>
+                                <p>{error ? "Flight service unavailable." : "No flights found for this date."}</p>
                             )}
                         </div>
                     )}
@@ -319,7 +443,7 @@ const CreateItinerary = ({ user }) => {
                             <p><strong>Road Trip:</strong> {startLocation} ➝ {destination}</p>
                             {transportRouteCoordinates.length > 0 ? (
                                 <div style={{ height: '500px', width: '100%', borderRadius: '12px', overflow: 'hidden', marginTop: '10px' }}>
-                                    <MapView routeCoordinates={transportRouteCoordinates} />
+                                    <MapView routeCoordinates={transportRouteCoordinates} markers={markers} />
                                 </div>
                             ) : (
                                 <p>{error ? <span style={{ color: 'red' }}>{error}</span> : "Loading route..."}</p>
