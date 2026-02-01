@@ -10,12 +10,14 @@ import com.org.Triplens.exception.NoTripFoundException;
 public interface TripDao {
 
 	ObjectId addTrip(Trip trip);
-	
+
 	Trip findTrip(ObjectId id) throws NoTripFoundException;
 
 	boolean addSharedUsers(ObjectId id, ObjectId tripId);
 
 	public List<Trip> getTripsByUserId(ObjectId userId);
-	
+
 	public void updateTripStatus(ObjectId tripId, Boolean status);
+
+	void deleteTrip(ObjectId tripId);
 }

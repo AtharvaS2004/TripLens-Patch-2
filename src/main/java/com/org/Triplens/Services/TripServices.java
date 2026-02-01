@@ -76,4 +76,12 @@ public class TripServices {
 		tripDao.updateTripStatus(tripId, status);
 	}
 
+	public void deleteTrip(ObjectId tripId) {
+		tripDao.deleteTrip(tripId);
+	}
+
+	public Trip getTripById(ObjectId tripId) throws NoTripFoundException {
+		return tripDao.findTrip(tripId);
+	}
+
 }

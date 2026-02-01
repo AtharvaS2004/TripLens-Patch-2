@@ -8,6 +8,8 @@ import CreateTrip from './components/CreateTrip';
 import CreateItinerary from './components/CreateItinerary';
 import ShareTrip from './components/ShareTrip';
 import UserProfile from './components/UserProfile';
+import TripSummary from './components/TripSummary';
+import BackgroundSlideshow from './components/BackgroundSlideshow';
 import './App.css';
 
 function App() {
@@ -33,6 +35,7 @@ function App() {
 
   return (
     <Router>
+      <BackgroundSlideshow />
       <div className="App">
         <Navbar user={user} onLogout={handleLogout} />
         <Routes>
@@ -43,6 +46,7 @@ function App() {
           <Route path="/create-itinerary" element={<CreateItinerary user={user} />} />
           <Route path="/share-trip" element={<ShareTrip user={user} />} />
           <Route path="/profile" element={<UserProfile user={user} />} />
+          <Route path="/trip-summary" element={<TripSummary user={user} />} />
         </Routes>
       </div>
     </Router>

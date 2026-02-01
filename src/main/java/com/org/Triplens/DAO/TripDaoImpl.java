@@ -65,4 +65,9 @@ public class TripDaoImpl implements TripDao {
 			tripRepository.save(tempTrip);
 		}
 	}
+
+	@Override
+	public void deleteTrip(ObjectId tripId) {
+		tripRepository.deleteById(tripId);
+	}
 }
