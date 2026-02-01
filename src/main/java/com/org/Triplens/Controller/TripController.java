@@ -47,4 +47,20 @@ public class TripController {
 			return false;
 		}
 	}
+
+	@PostMapping("/deleteTrip")
+	public void deleteTrip(@RequestParam("tripId") String tripId) {
+		ObjectId tripObjectId = new ObjectId(tripId);
+		tripService.deleteTrip(tripObjectId);
+	}
+
+	@PostMapping("/getTripById")
+	public Object getTripById(@RequestParam("tripId") String tripId) {
+		ObjectId tripObjectId = new ObjectId(tripId);
+		try {
+			return tripService.getTripById(tripObjectId);
+		} catch (Exception e) {
+			return null;
+		}
+	}
 }
