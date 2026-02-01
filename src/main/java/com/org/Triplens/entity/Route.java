@@ -3,7 +3,10 @@ package com.org.Triplens.entity;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", visible = true)
 @JsonSubTypes({
 		@JsonSubTypes.Type(value = CarRoute.class, name = "CAR"),
 		@JsonSubTypes.Type(value = Train.class, name = "TRAIN"),

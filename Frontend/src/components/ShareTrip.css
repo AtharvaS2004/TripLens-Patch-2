@@ -31,33 +31,48 @@
 
 .share-form {
     display: flex;
-    gap: 10px;
+    flex-direction: column;
+    gap: 15px;
     margin-bottom: 1.5rem;
 }
 
-.share-form input {
-    flex: 1;
+.input-group {
+    width: 100%;
+}
+
+.share-form input,
+.role-select {
+    width: 100%;
     padding: 12px 15px;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
     font-size: 1rem;
     transition: border-color 0.3s;
+    background: #fff;
 }
 
-.share-form input:focus {
+.role-select {
+    cursor: pointer;
+}
+
+.share-form input:focus,
+.role-select:focus {
     border-color: #3498db;
     outline: none;
 }
 
 .share-btn {
-    background: #3498db;
+    width: 100%;
+    background: #5e6ecc;
+    /* Match the purple from screenshot, or use existing blue */
+    /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); Optional: match screenshot gradient */
     color: white;
     border: none;
     padding: 12px 25px;
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: transform 0.2s, background 0.3s;
 }
 
 .share-btn:hover {

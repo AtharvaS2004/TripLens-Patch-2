@@ -16,7 +16,7 @@ import com.org.Triplens.repository.UsersRepository;
 public class UsersDAOImpl implements UsersDao {
 	@Autowired
 	UsersRepository userRepository;
-	
+
 	@Autowired
 	PasswordEncryption passwordEncryption;
 
@@ -47,34 +47,48 @@ public class UsersDAOImpl implements UsersDao {
 
 	@Override
 	public boolean authenticate(String email, String password)
-	        throws NoUserFoundException, PasswordIncorrectException {
+			throws NoUserFoundException, PasswordIncorrectException {
 
-	    Optional<Users> tempuser = userRepository.findByEmail(email);
+		Optional<Users> tempuser = userRepository.findByEmail(email);
 
-	    if (tempuser.isEmpty()) {
-	        throw new NoUserFoundException();
-	    }
+		if (tempuser.isEmpty()) {
+			throw new NoUserFoundException();
+		}
 
-	    Users entityUser = tempuser.get();
+		Users entityUser = tempuser.get();
 
-	    boolean isMatch = passwordEncryption.matches(
-	            password,                 // raw password from request
-	            entityUser.getPassword()  // encrypted password from DB
-	    );
+		boolean isMatch = passwordEncryption.matches(
+				password, // raw password from request
+				entityUser.getPassword() // encrypted password from DB
+		);
 
-	    if (isMatch) {
-	        return true;
-	    } else {
-	        throw new PasswordIncorrectException();
-	    }
+		if (isMatch) {
+			return true;
+		} else {
+			throw new PasswordIncorrectException();
+		}
 	}
 
 	@Override
 	public boolean addTrip(ObjectId id, ObjectId tripId) {
 		Users user = userRepository.findById(id).orElseThrow();
 		user.getTripList().add(tripId);
-		if(userRepository.save(user)!=null) {
+		if (userRepository.save(user) != null) {
 			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public boolean removeTrip(ObjectId userId, ObjectId tripId) {
+		Optional<Users> userOpt = userRepository.findById(userId);
+		if (userOpt.isPresent()) {
+			Users user = userOpt.get();
+			if (user.getTripList() != null) {
+				user.getTripList().remove(tripId);
+				userRepository.save(user);
+				return true;
+			}
 		}
 		return false;
 	}

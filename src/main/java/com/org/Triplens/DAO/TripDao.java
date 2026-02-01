@@ -13,7 +13,7 @@ public interface TripDao {
 
 	Trip findTrip(ObjectId id) throws NoTripFoundException;
 
-	boolean addSharedUsers(ObjectId id, ObjectId tripId);
+	boolean addSharedUsers(ObjectId id, ObjectId tripId, String role);
 
 	public List<Trip> getTripsByUserId(ObjectId userId);
 

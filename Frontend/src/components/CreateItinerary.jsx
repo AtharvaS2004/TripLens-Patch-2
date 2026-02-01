@@ -30,7 +30,7 @@ const getRandomHotelImage = (index) => {
 const CreateItinerary = ({ user }) => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { destination, startLocation, date, tripId } = location.state || { destination: 'Paris', startLocation: 'London', date: '' };
+    const { destination, startLocation, date, tripId, initialItinerary } = location.state || { destination: 'Paris', startLocation: 'London', date: '' };
 
     const [hotels, setHotels] = useState([]);
     const [selectedHotel, setSelectedHotel] = useState(null);
@@ -39,6 +39,7 @@ const CreateItinerary = ({ user }) => {
     const [flights, setFlights] = useState([]);
     const [selectedTransport, setSelectedTransport] = useState(null);
     const [transportRouteCoordinates, setTransportRouteCoordinates] = useState([]);
+    const [transportDistance, setTransportDistance] = useState(0);
     const [error, setError] = useState('');
 
     const [markers, setMarkers] = useState([]);
@@ -51,6 +52,31 @@ const CreateItinerary = ({ user }) => {
 
     // Festivals State
     const [festivals, setFestivals] = useState([]);
+
+    // Hydrate state for Edit Mode
+    useEffect(() => {
+        if (initialItinerary) {
+            setSelectedHotel(initialItinerary.hotels);
+            if (initialItinerary.routes) {
+                const type = initialItinerary.routes.type?.toLowerCase() || 'train';
+                setTransportMode(type);
+                setSelectedTransport(initialItinerary.routes);
+                if (type === 'car' && initialItinerary.routes.distanceKm) {
+                    setTransportDistance(initialItinerary.routes.distanceKm);
+                }
+            }
+            if (initialItinerary.selectedSpots) {
+                setSelectedSpots(initialItinerary.selectedSpots);
+            }
+            if (initialItinerary.festivals) {
+                setFestivals(initialItinerary.festivals);
+            }
+            // Hydrate Adventure Route if exists
+            if (initialItinerary.adventureRouteCoordinates) {
+                setAdventureRoute(initialItinerary.adventureRouteCoordinates);
+            }
+        }
+    }, [initialItinerary]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -141,6 +167,7 @@ const CreateItinerary = ({ user }) => {
                             if (routeData.routes && routeData.routes.length > 0) {
                                 const coordinates = routeData.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]); // Swap to [lat, lon]
                                 setTransportRouteCoordinates(coordinates);
+                                setTransportDistance((routeData.routes[0].distance / 1000).toFixed(2)); // toFixed(2) returns string, but works for display
                             }
                         }
                     } catch (e) {
@@ -158,8 +185,11 @@ const CreateItinerary = ({ user }) => {
     }, [destination, startLocation, date]);
 
     const handleSpotSelect = (spot) => {
-        if (selectedSpots.includes(spot)) {
-            setSelectedSpots(selectedSpots.filter(s => s !== spot));
+        const spotName = spot.name || spot.title;
+        const isSelected = selectedSpots.some(s => (s.name || s.title) === spotName);
+
+        if (isSelected) {
+            setSelectedSpots(selectedSpots.filter(s => (s.name || s.title) !== spotName));
         } else {
             setSelectedSpots([...selectedSpots, spot]);
         }
@@ -211,7 +241,12 @@ const CreateItinerary = ({ user }) => {
 
     const handleTransportChange = (mode) => {
         setTransportMode(mode);
-        setSelectedTransport(null); // Reset selection on mode change
+        // Auto-select 'Car' since there are no specific sub-options to choose from
+        if (mode === 'car') {
+            setSelectedTransport('Car');
+        } else {
+            setSelectedTransport(null); // Reset for Train/Flight to force specific selection
+        }
     };
 
     const handleTransportSelect = (transport) => {
@@ -225,17 +260,29 @@ const CreateItinerary = ({ user }) => {
         }
 
         // Construct Route Object based on Transport Mode (Mapping to backend entities)
+        // Construct Route Object based on Transport Mode (Mapping to backend entities)
         let routeObj = null;
-        if (selectedTransport === 'Car') {
+        if (transportMode === 'car' || selectedTransport === 'Car') {
             routeObj = {
                 type: "CAR",
-                distanceKm: 0, // Calculate or default
-                fuelCost: 0
+                distanceKm: parseFloat(transportDistance || 0),
+                fuelCost: (parseFloat(transportDistance || 0) * 12).toFixed(2) // Approx fuel cost
             };
-        } else if (selectedTransport === 'Train') {
-            routeObj = { type: "TRAIN" }; // Simplified
-        } else if (selectedTransport === 'Flight') {
-            routeObj = { type: "FLIGHT" }; // Simplified
+        } else if (transportMode === 'train' && selectedTransport) {
+            routeObj = {
+                ...selectedTransport,
+                type: "TRAIN"
+            };
+        } else if (transportMode === 'flight' && selectedTransport) {
+            // Handle both raw API response (nested) and pre-saved entity (flat)
+            routeObj = {
+                airlineName: selectedTransport.airlineName || selectedTransport.airline?.name,
+                flightNumber: selectedTransport.flightNumber || selectedTransport.number,
+                departureTime: selectedTransport.departureTime || selectedTransport.movement?.scheduledTime?.local,
+                arrivalTime: selectedTransport.arrivalTime,
+                price: parseFloat(selectedTransport.price || 0),
+                type: "FLIGHT"
+            };
         }
 
         const payload = {
@@ -253,13 +300,24 @@ const CreateItinerary = ({ user }) => {
 
         try {
             // Use tripId from state or a default/generated one if missing (for testing)
-            const activeTripId = tripId || "65b925a07567890123456789"; // Replace with graceful fallback or alert if strictly required
+            const activeTripId = tripId || "65b925a07567890123456789";
 
-            const res = await fetch(`http://localhost:8080/api/itineraries/addItinerary?tripId=${activeTripId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+            let res;
+            if (initialItinerary && initialItinerary.id) {
+                // UPDATE existing itinerary
+                res = await fetch(`http://localhost:8080/api/itineraries/updateItinerary?itineraryId=${initialItinerary.id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } else {
+                // CREATE new itinerary
+                res = await fetch(`http://localhost:8080/api/itineraries/addItinerary?tripId=${activeTripId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            }
 
             if (res.ok) {
                 alert("Itinerary saved successfully!");
@@ -322,7 +380,7 @@ const CreateItinerary = ({ user }) => {
                         touristSpots.map((spot, index) => (
                             <div
                                 key={index}
-                                className={`attraction-card ${selectedSpots.includes(spot) ? 'selected' : ''}`}
+                                className={`attraction-card ${selectedSpots.some(s => (s.name || s.title) === (spot.name || spot.title)) ? 'selected' : ''}`}
                                 onClick={() => handleSpotSelect(spot)}
                             >
                                 {/* Use image_url from backend (Wiki Scraper) */}

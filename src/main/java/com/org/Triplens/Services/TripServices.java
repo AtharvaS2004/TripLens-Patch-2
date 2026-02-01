@@ -25,10 +25,11 @@ public class TripServices {
 	@Autowired
 	TripDao tripDao;
 
-	public boolean addSharedUsers(ObjectId tripId, String email) throws NoUserFoundException, NoTripFoundException {
+	public boolean addSharedUsers(ObjectId tripId, String email, String role)
+			throws NoUserFoundException, NoTripFoundException {
 		Users user = userDao.findUsers(email);
 		ObjectId id = user.getObjectId();
-		if (tripDao.addSharedUsers(id, tripId)) {
+		if (tripDao.addSharedUsers(id, tripId, role)) {
 			return true;
 		} else {
 			return false;

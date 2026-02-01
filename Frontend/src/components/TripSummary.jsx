@@ -94,19 +94,29 @@ const TripSummary = ({ user }) => {
         </div>
     );
 
+    const canEdit = trip && user && (
+        trip.ownerUserId === user.id ||
+        (trip.sharedUsers && trip.sharedUsers.some(u => u.userId === user.id && u.role === 'EDITOR'))
+    );
+
     return (
         <div className="trip-summary-container">
+            {/* ... (Header remains same, not replacing entire file to be safe, just the button part? No, I need 'canEdit' calculated earlier) */}
+            {/* Actually, I will insert the variable definition before return, and then update the button */}
+
             <header className="summary-header">
                 <h1>{trip.title || "Trip Summary"}</h1>
                 <div className="trip-meta">
                     <p><strong>From:</strong> {trip.startLocation}</p>
                     <p><strong>To:</strong> {trip.destination}</p>
                     <p><strong>Dates:</strong> {trip.startDate} - {trip.endDate}</p>
+                    {!canEdit && <span className="badge viewer">Viewer Only</span>}
                 </div>
             </header>
 
             <section className="itinerary-preview">
                 <h2>Itinerary Details</h2>
+                {/* ... existing itinerary content ... */}
                 {itinerary ? (
                     <div className="itinerary-content">
                         {itinerary.hotels && (
@@ -161,9 +171,11 @@ const TripSummary = ({ user }) => {
                 )}
 
                 <div className="actions">
-                    <button className="edit-btn" onClick={handleEditItinerary}>
-                        {itinerary ? "Edit Itinerary" : "Create Itinerary"}
-                    </button>
+                    {canEdit && (
+                        <button className="edit-btn" onClick={handleEditItinerary}>
+                            {itinerary ? "Edit Itinerary" : "Create Itinerary"}
+                        </button>
+                    )}
                     <button className="share-btn" onClick={handleShareTrip}>
                         Share Trip
                     </button>
