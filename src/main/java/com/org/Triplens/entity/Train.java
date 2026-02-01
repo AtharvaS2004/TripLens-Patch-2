@@ -38,19 +38,14 @@ public class Train extends Route {
 	private String trainType;
 
 	// New fields for Itinerary - Not in DB, populated in Service
-	@org.springframework.data.annotation.Transient
 	private String departureTime;
 
-	@org.springframework.data.annotation.Transient
 	private String arrivalTime;
 
-	@org.springframework.data.annotation.Transient
 	private String duration;
 
-	@org.springframework.data.annotation.Transient
 	private String origin;
 
-	@org.springframework.data.annotation.Transient
 	private String destination;
 
 	public String getId() {

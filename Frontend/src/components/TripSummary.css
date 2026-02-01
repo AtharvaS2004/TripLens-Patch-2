@@ -118,3 +118,19 @@
     display: inline-block;
     margin-top: 15px;
 }
+
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+.badge.viewer {
+    background: rgba(255, 159, 67, 0.2);
+    color: #ff9f43;
+    border: 1px solid #ff9f43;
+}

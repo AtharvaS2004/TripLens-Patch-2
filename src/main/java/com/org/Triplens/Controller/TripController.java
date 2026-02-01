@@ -38,10 +38,11 @@ public class TripController {
 	}
 
 	@PostMapping("/addSharedUser")
-	public boolean addSharedUsers(@RequestParam("tripId") String tripId, @RequestParam("email") String email) {
+	public boolean addSharedUsers(@RequestParam("tripId") String tripId, @RequestParam("email") String email,
+			@RequestParam("role") String role) {
 		ObjectId tripObjectId = new ObjectId(tripId);
 		try {
-			return tripService.addSharedUsers(tripObjectId, email);
+			return tripService.addSharedUsers(tripObjectId, email, role);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;

@@ -8,7 +8,12 @@ import com.org.Triplens.exception.PasswordIncorrectException;
 
 public interface UsersDao {
 	boolean addUsers(Users users);
+
 	Users findUsers(String email) throws NoUserFoundException;
-	boolean authenticate(String email,String password) throws NoUserFoundException, PasswordIncorrectException;
+
+	boolean authenticate(String email, String password) throws NoUserFoundException, PasswordIncorrectException;
+
 	boolean addTrip(ObjectId id, ObjectId tripId);
+
+	boolean removeTrip(ObjectId userId, ObjectId tripId);
 }

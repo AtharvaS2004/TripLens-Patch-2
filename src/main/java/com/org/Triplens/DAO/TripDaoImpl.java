@@ -38,13 +38,17 @@ public class TripDaoImpl implements TripDao {
 	}
 
 	@Override
-	public boolean addSharedUsers(ObjectId id, ObjectId tripId) {
+	public boolean addSharedUsers(ObjectId id, ObjectId tripId, String role) {
 		Optional<Trip> trip = tripRepository.findById(tripId);
 		if (trip.isPresent()) {
 			Trip tempTrip = trip.get();
 			SharedUser sharedUser = new SharedUser();
 			sharedUser.setUserId(id);
-			sharedUser.setRole(TripRole.VIEWER);
+			try {
+				sharedUser.setRole(TripRole.valueOf(role.toUpperCase()));
+			} catch (IllegalArgumentException | NullPointerException e) {
+				sharedUser.setRole(TripRole.VIEWER); // Default to VIEWER if invalid
+			}
 			tempTrip.getSharedUsers().add(sharedUser);
 			tripRepository.save(tempTrip);
 			return true;
@@ -66,8 +70,26 @@ public class TripDaoImpl implements TripDao {
 		}
 	}
 
+	@Autowired
+	com.org.Triplens.repository.ItineraryRepository itineraryRepository;
+
+	@Autowired
+	UsersDao usersDao;
+
 	@Override
 	public void deleteTrip(ObjectId tripId) {
+		Optional<Trip> tripOpt = tripRepository.findById(tripId);
+		if (tripOpt.isPresent()) {
+			Trip trip = tripOpt.get();
+			// Delete Itinerary
+			if (trip.getItineraryId() != null) {
+				itineraryRepository.deleteById(trip.getItineraryId());
+			}
+			// Remove from User's trip list
+			if (trip.getOwnerUserId() != null) {
+				usersDao.removeTrip(trip.getOwnerUserId(), tripId);
+			}
+		}
 		tripRepository.deleteById(tripId);
 	}
 }
